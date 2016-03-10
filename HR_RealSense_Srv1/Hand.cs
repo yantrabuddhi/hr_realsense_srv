@@ -315,10 +315,15 @@ namespace HR_RealSense_Srv1
 
             }
             if (gestureStatusLeft != String.Empty)
+            {
                 Console.WriteLine(gestureStatusLeft);//Console.WriteLine("Frame " + frameNumber + ") " + gestureStatusRight);
+                cfg.m_comm.Send("{wave:left}");
+            }
             if (gestureStatusRight != String.Empty)
+            {
                 Console.WriteLine(gestureStatusRight);//Console.WriteLine("Frame " + frameNumber + ") " + gestureStatusLeft + ", " + gestureStatusRight);
-
+                cfg.m_comm.Send("{wave:right}");
+            }
         }//gesture
 
         /* Displaying current frame alerts */

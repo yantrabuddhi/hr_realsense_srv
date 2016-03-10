@@ -18,6 +18,8 @@ namespace HR_RealSense_Srv1
         public int image_width_f = 1280;
         public int image_height_f = 720;
         private FaceOrganisation m_faceOrg;
+        private FaceDataSerializer fs;
+        public tcpServe m_comm;
 
         //private readonly Dictionary<PXCMFaceData.ExpressionsData.FaceExpression, Bitmap> m_cachedExpressions =
         //    new Dictionary<PXCMFaceData.ExpressionsData.FaceExpression, Bitmap>();
@@ -39,10 +41,12 @@ namespace HR_RealSense_Srv1
                 {PXCMFaceData.ExpressionsData.FaceExpression.EXPRESSION_BROW_RAISER_LEFT, @"Brow_Raiser_Left"}
             };
 
-        public Config(PXCMSession session)
+        public Config(PXCMSession session,tcpServe comm)
         {
             Session = session;
             m_faceOrg = new FaceOrganisation();
+            fs = new FaceDataSerializer(m_expressionDictionary.Count());
+            m_comm = comm;
         }
 
         public bool readConfig() { return true; }
@@ -75,11 +79,13 @@ namespace HR_RealSense_Srv1
                 //}
 
                 getLocation(face);
-                getLandmark(face);
+                //getLandmark(face);
                 getPose(face);
-                getPulse(face);
+                //getPulse(face);
                 getExpressions(face);
                 getRecognition(face);
+                //now send fs.ToString() on tcp .. mandeep
+                m_comm.Send(fs.ToString());
             }
         }//publish face
         public void getLocation(PXCMFaceData.Face face)
@@ -105,7 +111,9 @@ namespace HR_RealSense_Srv1
                     graphics.DrawString(faceId, font, brush, m_faceTextOrganizer.FaceIdLocation);
                 }
             }*/
-            Console.WriteLine("Face Id: {0}", face.QueryUserID());
+            Console.WriteLine("Face Id: {0} = {1}", face.QueryUserID(),m_faceOrg.RectangleLocation.ToString());
+            fs.face_id = face.QueryUserID();
+            fs.face_rect = m_faceOrg.RectangleLocation;
         }
 
         public void getLandmark(PXCMFaceData.Face face)
@@ -181,6 +189,9 @@ namespace HR_RealSense_Srv1
             Console.WriteLine("Yaw - {0}", poseAngles.yaw);
             Console.WriteLine("Pitch - {0}", poseAngles.pitch);
             Console.WriteLine("Roll - {0}", poseAngles.roll);
+            fs.roll = poseAngles.roll;
+            fs.yaw = poseAngles.yaw;
+            fs.pitch = poseAngles.pitch;
             //}
         }
 
@@ -198,14 +209,14 @@ namespace HR_RealSense_Srv1
             //using (Graphics graphics = Graphics.FromImage(m_bitmap))
             //using (var brush = new SolidBrush(m_faceTextOrganizer.Colour))
             //{
-            const int imageSizeWidth = 18;
-            const int imageSizeHeight = 18;
+            ////const int imageSizeWidth = 18;
+            ////const int imageSizeHeight = 18;
 
             int positionX = m_faceOrg.ExpressionsLocation.X;
             //int positionXText = positionX + imageSizeWidth;
             int positionY = m_faceOrg.ExpressionsLocation.Y;
             //int positionYText = positionY + imageSizeHeight / 4;
-
+            int cnt = 0;
             foreach (var expressionEntry in m_expressionDictionary)
             {
                 PXCMFaceData.ExpressionsData.FaceExpression expression = expressionEntry.Key;
@@ -233,7 +244,9 @@ namespace HR_RealSense_Srv1
                 //}
                 Console.Write(m_expressionDictionary[expression]);
                 Console.WriteLine(expressionText);
-
+                fs.expr_array[cnt].expr_name = m_expressionDictionary[expression];
+                fs.expr_array[cnt].intensity = result.intensity;
+                cnt++;
                 // }
                 //}
             }
@@ -258,6 +271,8 @@ namespace HR_RealSense_Srv1
             //    using (var brush = new SolidBrush(m_faceTextOrganizer.Colour))
             //    using (var font = new Font(FontFamily.GenericMonospace, m_faceTextOrganizer.FontSize, FontStyle.Bold))
             //    {
+            fs.known_face = userId == -1;
+            fs.rec_id = userId;
             Console.Write(recognitionText);
             Console.WriteLine("= {0}", m_faceOrg.RecognitionLocation);
             //    }
