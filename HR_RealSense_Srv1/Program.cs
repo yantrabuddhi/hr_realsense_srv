@@ -15,13 +15,22 @@ namespace HR_RealSense_Srv1
             if (session == null) { Console.WriteLine("Could not start session."); return; }
                 Config config = new Config(session);
             if (!config.readConfig()) { Console.WriteLine("Could not read config. Aborting"); session.Dispose(); return; }
+            //
+            
             Faces fc = new Faces(config);
-            //create thread
             var thread = new Thread(fc.callOnceInLoop);
             thread.Start();
+            Thread.Sleep(10);
+            //
+
+            Hand hand = new Hand(config);
+            var threadH = new Thread(hand.callOnceInLoop);
+            threadH.Start();
+            //
+            Thread.Sleep(10);
             while (true)
             {
-                
+                Thread.Sleep(5);
             }
             //session.Dispose();
         }

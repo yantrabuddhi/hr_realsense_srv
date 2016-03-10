@@ -70,6 +70,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="FaceOrganisation.cs" />
     <Compile Include="Faces.cs" />
+    <Compile Include="Hand.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

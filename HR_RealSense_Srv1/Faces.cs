@@ -61,7 +61,7 @@ namespace HR_RealSense_Srv1
             captureMgr.FilterByStreamProfiles(PXCMCapture.StreamType.STREAM_TYPE_COLOR, 1280, 720, 0);
             ////
             // Set Source & Landmark Profile Index 
-            captureMgr.SetFileName(cfg.GetFileName(), true);
+            ////captureMgr.SetFileName(cfg.GetFileName(), true);//do not record .. mandeep
 
             // Set Module            
             pp.EnableFace();
@@ -83,7 +83,8 @@ namespace HR_RealSense_Srv1
             //PXCMFaceConfiguration.TrackingModeType mode = m_form.GetCheckedProfile().Contains("3D")
             //    ? PXCMFaceConfiguration.TrackingModeType.FACE_MODE_COLOR_PLUS_DEPTH
             //    : PXCMFaceConfiguration.TrackingModeType.FACE_MODE_COLOR;
-            PXCMFaceConfiguration.TrackingModeType mode = PXCMFaceConfiguration.TrackingModeType.FACE_MODE_COLOR;
+            PXCMFaceConfiguration.TrackingModeType mode = PXCMFaceConfiguration.TrackingModeType.FACE_MODE_COLOR_PLUS_DEPTH;//may need to change this?
+            ////PXCMFaceConfiguration.TrackingModeType mode = PXCMFaceConfiguration.TrackingModeType.FACE_MODE_COLOR;
 
             moduleConfiguration.SetTrackingMode(mode);
 

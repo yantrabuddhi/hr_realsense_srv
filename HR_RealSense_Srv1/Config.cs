@@ -47,6 +47,7 @@ namespace HR_RealSense_Srv1
 
         public bool readConfig() { return true; }
         public string GetFileName() { return "facefile.dat"; }
+        public string GetGestureName() { return "wave"; }
         public bool IsExpressionsEnabled() { return true; }
         public bool IsPulseEnabled() { return false; }
         public bool IsRecognitionChecked() { return true; }
