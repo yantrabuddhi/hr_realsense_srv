@@ -162,12 +162,22 @@ namespace HR_RealSense_Srv1
                 getRecognition(face);
                 //now send fs.ToString() on tcp .. mandeep
                 //var fst = new FaceJSON(m_expressionDictionary.Count);
-                if (fs.expr_array[0].expr_name!=null)
-                farr.faces.Add(fs);
+                if (fs.expr_array[0].expr_name != null)
+                {
+                    farr.faces.Add(fs);
+                    if (getRecognitionB(face)) continue;
+                    PXCMFaceData.RecognitionData rdata = face.QueryRecognition();
+                    if (rdata == null)
+                    {
+                        throw new Exception(" PXCMFaceData.RecognitionData null");
+                    }
+                    rdata.RegisterUser();
+                    Console.WriteLine("Registered face");
+                }
             }
             if (farr.faces.Count > 0)
             {
-                registerAll(moduleOutput);
+                //registerAll(moduleOutput);
                 m_comm.SendFace(ToJSON(farr));
                 return true;
             }
