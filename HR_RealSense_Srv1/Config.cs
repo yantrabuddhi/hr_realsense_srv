@@ -91,12 +91,12 @@ namespace HR_RealSense_Srv1
             image_width_f = wdth;
             image_height_f = ht;
         }
-        public void publishFaceData(PXCMFaceData moduleOutput)
+        public bool publishFaceData(PXCMFaceData moduleOutput)
         {
             Debug.Assert(moduleOutput != null);
             FacesArray farr = new FacesArray();
             int j = moduleOutput.QueryNumberOfDetectedFaces();
-            if (j < 1) return;
+            if (j < 1) return false;
             farr.image_height = image_height_f;
             farr.image_width = image_width_f;
             farr.faces = new List<FaceJSON>(m_expressionDictionary.Count);
@@ -123,9 +123,15 @@ namespace HR_RealSense_Srv1
                 getRecognition(face);
                 //now send fs.ToString() on tcp .. mandeep
                 //var fst = new FaceJSON(m_expressionDictionary.Count);
+                if (fs.expr_array[0].expr_name!=null)
                 farr.faces.Add(fs);
             }
-            if (farr.faces.Count>0) m_comm.SendFace(ToJSON(farr));
+            if (farr.faces.Count > 0)
+            {
+                m_comm.SendFace(ToJSON(farr));
+                return true;
+            }
+            return false;
         }//publish face
         public void getLocation(PXCMFaceData.Face face)
         {
