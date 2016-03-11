@@ -213,7 +213,8 @@ namespace HR_RealSense_Srv1
 
                         if (recognition.properties.isEnabled)
                         {
-                            UpdateRecognition(moduleOutput);
+                            registerAll(moduleOutput);
+                            //UpdateRecognition(moduleOutput);
                         }
 
                         cfg.publishFaceData(moduleOutput);
@@ -230,6 +231,42 @@ namespace HR_RealSense_Srv1
                 pxcmStatus.PXCM_STATUS_NO_ERROR) return;
             cfg.setImageSize(image.info.width, image.info.height);
             image.ReleaseAccess(data);
+        }
+        private void registerAll(PXCMFaceData faceOutput)
+        {
+            //cfg.Register = false;
+            int i = faceOutput.QueryNumberOfDetectedFaces();
+            if (i <= 0)
+                return;
+            for (int j = 0; j < i; j++)
+            {
+                PXCMFaceData.Face qface = faceOutput.QueryFaceByIndex(j);
+                if (qface == null)
+                {
+                    throw new Exception("PXCMFaceData.Face null");
+                }
+                if (getRecognition(qface)) continue;
+                PXCMFaceData.RecognitionData rdata = qface.QueryRecognition();
+                if (rdata == null)
+                {
+                    throw new Exception(" PXCMFaceData.RecognitionData null");
+                }
+                rdata.RegisterUser();
+            }
+        }
+        public bool getRecognition(PXCMFaceData.Face face)
+        {
+            Debug.Assert(face != null);
+
+            PXCMFaceData.RecognitionData qrecognition = face.QueryRecognition();
+            if (qrecognition == null)
+            {
+                throw new Exception(" PXCMFaceData.RecognitionData null");
+            }
+            var userId = qrecognition.QueryUserID();
+            //var recognitionText = userId == -1 ? "Not Registered" : String.Format("Registered ID: {0}", userId);
+            return (!(userId == -1));
+
         }
 
         private void UpdateRecognition(PXCMFaceData faceOutput)

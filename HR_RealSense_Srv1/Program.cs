@@ -11,16 +11,18 @@ namespace HR_RealSense_Srv1
     {
         static void Main(string[] args)
         {
-            tcpServe comm = new tcpServe();
+            //tcpServe comm = new tcpServe();//change to json http
+            httpClient comm = new httpClient(Config.http_face_url, Config.http_hand_url);
             PXCMSession session = PXCMSession.CreateInstance();
             if (session == null) { Console.WriteLine("Could not start session."); return; }
                 Config config = new Config(session,comm);
             if (!config.readConfig()) { Console.WriteLine("Could not read config. Aborting"); session.Dispose(); return; }
             //
+            /*
             var cThread=new Thread(comm.tcpServeListen);
             cThread.Start();
             Thread.Sleep(10);
-
+            */
             Faces fc = new Faces(config);
             var thread = new Thread(fc.callOnceInLoop);
             thread.Start();

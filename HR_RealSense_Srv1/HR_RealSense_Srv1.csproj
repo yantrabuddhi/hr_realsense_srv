@@ -59,6 +59,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -69,9 +70,12 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="FaceDataSerializer.cs" />
+    <Compile Include="FaceJSON.cs" />
     <Compile Include="FaceOrganisation.cs" />
     <Compile Include="Faces.cs" />
     <Compile Include="Hand.cs" />
+    <Compile Include="HandJSON.cs" />
+    <Compile Include="httpClient.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="tcpServe.cs" />

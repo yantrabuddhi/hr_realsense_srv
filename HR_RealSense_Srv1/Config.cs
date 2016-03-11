@@ -5,10 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
+
 namespace HR_RealSense_Srv1
 {
     class Config
     {
+        public static string http_face_url="http://127.0.0.1:8000/FaceRec";
+        public static string http_hand_url = "http://127.0.0.1:8000/Hand";
         public PXCMSession Session;
         private const int LandmarkAlignment = -3;
         private const int DefaultNumberOfFaces = 4;
@@ -18,8 +24,10 @@ namespace HR_RealSense_Srv1
         public int image_width_f = 1280;
         public int image_height_f = 720;
         private FaceOrganisation m_faceOrg;
-        private FaceDataSerializer fs;
-        public tcpServe m_comm;
+        //private FaceDataSerializer fs;
+        private FaceJSON fs;
+        //public tcpServe m_comm;//change to json http
+        public httpClient m_comm;
 
         //private readonly Dictionary<PXCMFaceData.ExpressionsData.FaceExpression, Bitmap> m_cachedExpressions =
         //    new Dictionary<PXCMFaceData.ExpressionsData.FaceExpression, Bitmap>();
@@ -41,12 +49,34 @@ namespace HR_RealSense_Srv1
                 {PXCMFaceData.ExpressionsData.FaceExpression.EXPRESSION_BROW_RAISER_LEFT, @"Brow_Raiser_Left"}
             };
 
-        public Config(PXCMSession session,tcpServe comm)
+        public Config(PXCMSession session,httpClient comm)
         {
             Session = session;
             m_faceOrg = new FaceOrganisation();
-            fs = new FaceDataSerializer(m_expressionDictionary.Count());
+            fs = new FaceJSON(m_expressionDictionary.Count());//new FaceDataSerializer(m_expressionDictionary.Count());
             m_comm = comm;
+        }
+        public string ToJSON(FacesArray faj)
+        {
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(FacesArray));
+            MemoryStream ms = new MemoryStream();
+            ser.WriteObject(ms, faj);
+            ms.Position = 0;
+            StreamReader sr = new StreamReader(ms);
+            string result = sr.ReadToEnd();
+            Console.WriteLine(result);
+            return result;
+        }
+        public string ToJSON(HandJSON hnd)
+        {
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(HandJSON));
+            MemoryStream ms = new MemoryStream();
+            ser.WriteObject(ms, hnd);
+            ms.Position = 0;
+            StreamReader sr = new StreamReader(ms);
+            string result = sr.ReadToEnd();
+            Console.WriteLine(result);
+            return result;
         }
 
         public bool readConfig() { return true; }
@@ -64,9 +94,16 @@ namespace HR_RealSense_Srv1
         public void publishFaceData(PXCMFaceData moduleOutput)
         {
             Debug.Assert(moduleOutput != null);
+            FacesArray farr = new FacesArray();
+            int j = moduleOutput.QueryNumberOfDetectedFaces();
+            if (j < 1) return;
+            farr.image_height = image_height_f;
+            farr.image_width = image_width_f;
+            farr.faces = new List<FaceJSON>(m_expressionDictionary.Count);
 
-            for (var i = 0; i < moduleOutput.QueryNumberOfDetectedFaces(); i++)
+            for (var i = 0; i < j; i++)
             {
+                fs = new FaceJSON(m_expressionDictionary.Count());
                 PXCMFaceData.Face face = moduleOutput.QueryFaceByIndex(i);
                 if (face == null)
                 {
@@ -78,15 +115,17 @@ namespace HR_RealSense_Srv1
                 m_faceOrg.ChangeFace(i, face, image_height_f, image_width_f);
                 //}
 
-                getLocation(face);
+                getLocation(face);//should also pass fs?
                 //getLandmark(face);
                 getPose(face);
                 //getPulse(face);
                 getExpressions(face);
                 getRecognition(face);
                 //now send fs.ToString() on tcp .. mandeep
-                m_comm.Send(fs.ToString());
+                //var fst = new FaceJSON(m_expressionDictionary.Count);
+                farr.faces.Add(fs);
             }
+            if (farr.faces.Count>0) m_comm.SendFace(ToJSON(farr));
         }//publish face
         public void getLocation(PXCMFaceData.Face face)
         {
@@ -111,9 +150,11 @@ namespace HR_RealSense_Srv1
                     graphics.DrawString(faceId, font, brush, m_faceTextOrganizer.FaceIdLocation);
                 }
             }*/
-            Console.WriteLine("Face Id: {0} = {1}", face.QueryUserID(),m_faceOrg.RectangleLocation.ToString());
+            ////Console.WriteLine("Face Id: {0} = {1}", face.QueryUserID(),m_faceOrg.RectangleLocation.ToString());
             fs.face_id = face.QueryUserID();
-            fs.face_rect = m_faceOrg.RectangleLocation;
+            //fs.face_rect = m_faceOrg.RectangleLocation;
+            fs.set_face_rect(m_faceOrg.RectangleLocation);
+            fs.set_face_location(m_faceOrg.RecognitionLocation);
         }
 
         public void getLandmark(PXCMFaceData.Face face)
@@ -186,9 +227,9 @@ namespace HR_RealSense_Srv1
                      m_faceTextOrganizer.PoseLocation.Y + 2 * m_faceTextOrganizer.FontSize);
              }
              */
-            Console.WriteLine("Yaw - {0}", poseAngles.yaw);
-            Console.WriteLine("Pitch - {0}", poseAngles.pitch);
-            Console.WriteLine("Roll - {0}", poseAngles.roll);
+            //Console.WriteLine("Yaw - {0}", poseAngles.yaw);
+            //Console.WriteLine("Pitch - {0}", poseAngles.pitch);
+            //Console.WriteLine("Roll - {0}", poseAngles.roll);
             fs.roll = poseAngles.roll;
             fs.yaw = poseAngles.yaw;
             fs.pitch = poseAngles.pitch;
@@ -242,9 +283,9 @@ namespace HR_RealSense_Srv1
                 //positionY += imageSizeHeight;
                 //positionYText += imageSizeHeight;
                 //}
-                Console.Write(m_expressionDictionary[expression]);
-                Console.WriteLine(expressionText);
-                fs.expr_array[cnt].expr_name = m_expressionDictionary[expression];
+                ////Console.Write(m_expressionDictionary[expression]);
+                ///Console.WriteLine(expressionText);
+                fs.expr_array[cnt].expr_name = expression.ToString();//m_expressionDictionary[expression];
                 fs.expr_array[cnt].intensity = result.intensity;
                 cnt++;
                 // }
@@ -273,8 +314,8 @@ namespace HR_RealSense_Srv1
             //    {
             fs.known_face = userId == -1;
             fs.rec_id = userId;
-            Console.Write(recognitionText);
-            Console.WriteLine("= {0}", m_faceOrg.RecognitionLocation);
+            ////Console.Write(recognitionText);
+            ////Console.WriteLine("= {0}", m_faceOrg.RecognitionLocation);
             //    }
             //}
         }
@@ -297,8 +338,8 @@ namespace HR_RealSense_Srv1
                 using (var font = new Font(FontFamily.GenericMonospace, m_faceTextOrganizer.FontSize, FontStyle.Bold))
                 */
             //{
-            Console.Write(pulseString);
-            Console.WriteLine("= {0}", m_faceOrg.PulseLocation);
+            ////Console.Write(pulseString);
+            ////Console.WriteLine("= {0}", m_faceOrg.PulseLocation);
             //}
             //}
 

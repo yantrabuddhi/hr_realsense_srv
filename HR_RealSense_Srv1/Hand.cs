@@ -290,7 +290,7 @@ namespace HR_RealSense_Srv1
             {
                 return;
             }
-            Console.WriteLine(firedGesturesNumber.ToString());
+            //Console.WriteLine(firedGesturesNumber.ToString());
 
             for (int i = 0; i < firedGesturesNumber; i++)
             {
@@ -314,16 +314,19 @@ namespace HR_RealSense_Srv1
                 }
 
             }
+            bool left = (gestureStatusLeft != String.Empty), right = (gestureStatusRight != String.Empty);
+            HandJSON hnd=new HandJSON(left, right);
             if (gestureStatusLeft != String.Empty)
             {
                 Console.WriteLine(gestureStatusLeft);//Console.WriteLine("Frame " + frameNumber + ") " + gestureStatusRight);
-                cfg.m_comm.Send("{wave:left}");
+                //cfg.m_comm.SendHand(cfg.ToJSON());
             }
             if (gestureStatusRight != String.Empty)
             {
                 Console.WriteLine(gestureStatusRight);//Console.WriteLine("Frame " + frameNumber + ") " + gestureStatusLeft + ", " + gestureStatusRight);
-                cfg.m_comm.Send("{wave:right}");
+                //cfg.m_comm.Send("{wave:right}");
             }
+            cfg.m_comm.SendHand(cfg.ToJSON(hnd));
         }//gesture
 
         /* Displaying current frame alerts */
