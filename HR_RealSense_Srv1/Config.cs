@@ -91,6 +91,45 @@ namespace HR_RealSense_Srv1
             image_width_f = wdth;
             image_height_f = ht;
         }
+
+        private void registerAll(PXCMFaceData faceOutput)
+        {
+            //cfg.Register = false;
+            int i = faceOutput.QueryNumberOfDetectedFaces();
+            if (i <= 0)
+                return;
+            for (int j = 0; j < i; j++)
+            {
+                PXCMFaceData.Face qface = faceOutput.QueryFaceByIndex(j);
+                if (qface == null)
+                {
+                    throw new Exception("PXCMFaceData.Face null");
+                }
+                if (getRecognitionB(qface)) continue;
+                PXCMFaceData.RecognitionData rdata = qface.QueryRecognition();
+                if (rdata == null)
+                {
+                    throw new Exception(" PXCMFaceData.RecognitionData null");
+                }
+                rdata.RegisterUser();
+                Console.WriteLine("Registered");
+            }
+        }
+        public bool getRecognitionB(PXCMFaceData.Face face)
+        {
+            Debug.Assert(face != null);
+
+            PXCMFaceData.RecognitionData qrecognition = face.QueryRecognition();
+            if (qrecognition == null)
+            {
+                throw new Exception(" PXCMFaceData.RecognitionData null");
+            }
+            var userId = qrecognition.QueryUserID();
+            //var recognitionText = userId == -1 ? "Not Registered" : String.Format("Registered ID: {0}", userId);
+            return (!(userId == -1));
+
+        }
+
         public bool publishFaceData(PXCMFaceData moduleOutput)
         {
             Debug.Assert(moduleOutput != null);
@@ -128,6 +167,7 @@ namespace HR_RealSense_Srv1
             }
             if (farr.faces.Count > 0)
             {
+                registerAll(moduleOutput);
                 m_comm.SendFace(ToJSON(farr));
                 return true;
             }
@@ -259,10 +299,6 @@ namespace HR_RealSense_Srv1
             ////const int imageSizeWidth = 18;
             ////const int imageSizeHeight = 18;
 
-            int positionX = m_faceOrg.ExpressionsLocation.X;
-            //int positionXText = positionX + imageSizeWidth;
-            int positionY = m_faceOrg.ExpressionsLocation.Y;
-            //int positionYText = positionY + imageSizeHeight / 4;
             int cnt = 0;
             foreach (var expressionEntry in m_expressionDictionary)
             {

@@ -429,17 +429,20 @@ namespace HR_RealSense_Srv1
                             cnt = 0;
                             cfg.Register = true;
                         }
-                        if (recognition.properties.isEnabled)
-                        {
-                            if (cfg.publishFaceData(moduleOutput))
-                                registerAll(moduleOutput);
-                            //cfg.Register = true;
-                            //UpdateRecognition(moduleOutput);
-                        }
-                        else cfg.publishFaceData(moduleOutput);
+//                        if (moduleOutput.QueryNumberOfDetectedFaces() > 0)
+//                        {
+//                            if (recognition.properties.isEnabled)
+//                            {
+
+//                               registerAll(moduleOutput);
+                                //cfg.Register = true;
+                                //UpdateRecognition(moduleOutput);
+//                            }
+                            cfg.publishFaceData(moduleOutput);//call register here
+//                        }
                         //if (!cfg.publishFaceData(moduleOutput)) Console.WriteLine("did not publish");
                         //m_form.UpdatePanel();
-                        Thread.Sleep(5);
+                        Thread.Sleep(10);
                     }
                     pp.ReleaseFrame();
                 }
