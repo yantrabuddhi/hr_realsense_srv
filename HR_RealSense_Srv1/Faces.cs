@@ -188,6 +188,8 @@ namespace HR_RealSense_Srv1
                 //CheckForDepthStream(profiles, faceModule);
 
                 Console.WriteLine("Streaming");
+                pTimer tmr = new pTimer();
+                int cnt = 0;
                 while (true)
                 {
                     if (pp.AcquireFrame(true) < pxcmStatus.PXCM_STATUS_NO_ERROR) return;
@@ -211,10 +213,16 @@ namespace HR_RealSense_Srv1
                             return;
                         }
 
+                        if (tmr.Tick()) cnt++;
+                        if (cnt > 2)
+                        {
+                            cnt = 0;
+                            cfg.Register = true;
+                        }
                         if (recognition.properties.isEnabled)
                         {
-                            registerAll(moduleOutput);
-                            //UpdateRecognition(moduleOutput);
+                            //registerAll(moduleOutput);
+                            UpdateRecognition(moduleOutput);
                         }
 
                         cfg.publishFaceData(moduleOutput);
@@ -291,6 +299,7 @@ namespace HR_RealSense_Srv1
             {
                 throw new Exception(" PXCMFaceData.RecognitionData null");
             }
+            Console.WriteLine("Registered...");
             rdata.RegisterUser();
         }
 

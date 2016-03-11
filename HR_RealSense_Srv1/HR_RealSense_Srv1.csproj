@@ -78,6 +78,7 @@
     <Compile Include="httpClient.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="pTimer.cs" />
     <Compile Include="tcpServe.cs" />
   </ItemGroup>
   <ItemGroup>

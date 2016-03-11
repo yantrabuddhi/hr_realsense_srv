@@ -19,7 +19,7 @@ namespace HR_RealSense_Srv1
         private const int LandmarkAlignment = -3;
         private const int DefaultNumberOfFaces = 4;
         public int MaxFaces = 4;
-        public bool Register = false;
+        public bool Register = true;
         public bool Unregister = false;
         public int image_width_f = 1280;
         public int image_height_f = 720;
@@ -312,7 +312,7 @@ namespace HR_RealSense_Srv1
             //    using (var brush = new SolidBrush(m_faceTextOrganizer.Colour))
             //    using (var font = new Font(FontFamily.GenericMonospace, m_faceTextOrganizer.FontSize, FontStyle.Bold))
             //    {
-            fs.known_face = userId == -1;
+            fs.known_face = !(userId == -1);
             fs.rec_id = userId;
             ////Console.Write(recognitionText);
             ////Console.WriteLine("= {0}", m_faceOrg.RecognitionLocation);
