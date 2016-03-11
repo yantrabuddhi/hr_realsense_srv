@@ -436,10 +436,10 @@ namespace HR_RealSense_Srv1
                             //cfg.Register = true;
                             //UpdateRecognition(moduleOutput);
                         }
-                        
+                        else cfg.publishFaceData(moduleOutput);
                         //if (!cfg.publishFaceData(moduleOutput)) Console.WriteLine("did not publish");
                         //m_form.UpdatePanel();
-                        Thread.Sleep(10);
+                        Thread.Sleep(5);
                     }
                     pp.ReleaseFrame();
                 }
